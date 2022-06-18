@@ -34,8 +34,10 @@ def download_panel(panelid, folder="./images/"):
     opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
     urllib.request.install_opener(opener)
     if "http" in src:
+        # Panel is not partially broken.
         urllib.request.urlretrieve(src, folder + panelid + "_" + name + ".png")
     else:
+        # Panel is partially broken.
         urllib.request.urlretrieve(src, folder + panelid + "_" + name + ".svg")
     
 
