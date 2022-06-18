@@ -40,6 +40,23 @@ def download_panel(panelid, folder="./images/"):
         # Panel is partially broken.
         urllib.request.urlretrieve(src, folder + panelid + "_" + name + ".svg")
     
+def get_drawing_links_from_public_games(profile, page):
+    """Gets all the links to drawings from the public games page. The profile link should be a numeric 
+    player id or an url to the main page of the user profile.
+    """
+    url = profile
+    if profile.isdecimal():
+        # TODO: Enable choice between test and drawception
+        url = "https://drawception.com/player/" + str(profile) + "/1/"
+    url += "games/" + str(page) + "/"
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    a_tags = soup.find_all('a', class_="btn btn-sm btn-bright")
+    links = []
+    for tag in a_tags:
+        # TODO: Enable choice between test and drawception
+        links.append("https://drawception.com" + tag['href'])
+    return links
 
 if __name__ == "__main__":
     
@@ -47,4 +64,4 @@ if __name__ == "__main__":
     sessionid = session_f.readline()
     session_f.close()
     panelid = "1234567890"
-    download_panel(panelid)
+    print(get_drawing_links_from_public_games("100", 1))
