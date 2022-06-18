@@ -3,3 +3,6 @@ sessionid
 
 # Test files
 output*
+
+# Scraped images directory
+images
