@@ -1,0 +1,5 @@
+# Disallow committing sensitive information
+sessionid
+
+# Test files
+output*
