@@ -8,8 +8,8 @@ import urllib.request
 class DrawceptionImagePanel:
     def __init__(self, url):
         self.url = url
-        if url[-1] != "/":
-            url += "/"
+        if self.url[-1] != "/":
+            self.url += "/"
         self.id = None
         self.author = None
         self.creation_date = None
@@ -63,17 +63,20 @@ class DrawceptionImagePanel:
         Drawception drawings created after 2021-12-17 are partially broken. Png's fail to load
         due to an access denied bug. It is only possible to download svg images.
         """
+        if folder[-1] != "/":
+            folder += "/"
         url = base_url + "/panel/drawing/" + panel_id + "/1/"
-        panel = DrawceptionImagePanel(url)
-        panel.download_drawing(folder)
+        DrawceptionImagePanel.download_drawing_from_url(url, folder)
     
     @staticmethod
-    def download_drawing_from_url(url, folder="./images"):
+    def download_drawing_from_url(url, folder="./images/"):
         """Downloads the panel image from drawception given a direct url to the panel page.
 
         Drawception drawings created after 2021-12-17 are partially broken. Png's fail to load
         due to an access denied bug. It is only possible to download svg images.
         """
+        if folder[-1] != "/":
+            folder += "/"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, 'html.parser')
         image = soup.find_all('img', class_="gamepanel-minsize gamepanel-shadow img-responsive")[0]
@@ -89,17 +92,27 @@ class DrawceptionImagePanel:
             # Panel is partially broken.
             urllib.request.urlretrieve(src, folder + name + ".svg")
     
-    def download_drawing(self, folder="./images"):
+    def download_drawing(self, folder="./images/"):
         """Class method to download the panel image from drawception.
 
         Drawception drawings created after 2021-12-17 are partially broken. Png's fail to load
         due to an access denied bug. It is only possible to download svg images.
         """
+        if folder[-1] != "/":
+            folder += "/"
         if self.image_src == None:
             if self.set_panel_details() == False:
                 logging.error("Unable to download image from {}".format(self.url))
         
-        DrawceptionImagePanel.download_drawing_from_url(self.image_src, folder)
+        opener = urllib.request.build_opener()
+        opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
+        urllib.request.install_opener(opener)
+        if "http" in self.image_src:
+            # Panel is not partially broken.
+            urllib.request.urlretrieve(self.image_src, folder + self.image_name + ".png")
+        else:
+            # Panel is partially broken.
+            urllib.request.urlretrieve(self.image_src, folder + self.image_name + ".svg")
 
     def get_panel_svg(self, sessionid, panelid):
         """Gets the svg from drawception, given the panel id.
