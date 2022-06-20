@@ -1,6 +1,7 @@
 import requests
 import urllib.request
 from bs4 import BeautifulSoup
+import time
 
 class DrawceptionScraper:
     def __init__(self, url="https://stage.drawception.com"):
@@ -21,15 +22,24 @@ class DrawceptionScraper:
         else:
             return page.text
 
-    def download_panel(self, panelid, folder="./images/"):
+    def download_panel_from_id(self, panel_id, folder="./images/"):
         """Downloads the panel image from drawception, given the panel id and saves
         it into the specified folder.
 
         Drawception drawings created after 2021-12-17 are partially broken. Png's fail to load
         due to an access denied bug. It is only possible to download svg images.
         """
-        url = self.base_url + "/panel/drawing/" + panelid + "/1/"
-        page = requests.get(url)
+        url = self.base_url + "/panel/drawing/" + panel_id + "/1/"
+        self.download_panel_from_url(url, folder)
+
+    def download_panel_from_url(self, panel_url, folder="./images/"):
+        """Downloads the panel image from drawception, given the panel page link and saves
+        it into the specified folder.
+
+        Drawception drawings created after 2021-12-17 are partially broken. Png's fail to load
+        due to an access denied bug. It is only possible to download svg images.
+        """
+        page = requests.get(panel_url)
         soup = BeautifulSoup(page.content, 'html.parser')
         image = soup.find_all('img', class_="gamepanel-minsize gamepanel-shadow img-responsive")[0]
         src = image['src']
@@ -39,10 +49,10 @@ class DrawceptionScraper:
         urllib.request.install_opener(opener)
         if "http" in src:
             # Panel is not partially broken.
-            urllib.request.urlretrieve(src, folder + panelid + "_" + name + ".png")
+            urllib.request.urlretrieve(src, folder + name + ".png")
         else:
             # Panel is partially broken.
-            urllib.request.urlretrieve(src, folder + panelid + "_" + name + ".svg")
+            urllib.request.urlretrieve(src, folder + name + ".svg")
         
     def get_drawing_links_from_public_games(self, profile, page):
         """Gets all the links to drawings from the public games page. The profile link should be a numeric 
@@ -65,5 +75,3 @@ if __name__ == "__main__":
     session_f = open("sessionid", 'r')
     sessionid = session_f.readline()
     session_f.close()
-    panelid = "1234567890"
-    scraper = DrawceptionScraper()
