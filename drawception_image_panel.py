@@ -7,6 +7,8 @@ from dateutil.parser import parse as parse_date
 class DrawceptionImagePanel:
     def __init__(self, url):
         self.url = url
+        if url[-1] != "/":
+            url += "/"
         self.id = None
         self.author = None
         self.creation_date = None

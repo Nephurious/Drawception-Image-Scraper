@@ -7,6 +7,8 @@ import logging
 class DrawceptionPlayer:
     def __init__(self, url):
         self.url = url
+        if self.url[-1] != "/":
+            self.url += "/"
         self.id = None
         self.name = None
         self.num_drawings = None
