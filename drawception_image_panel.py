@@ -35,7 +35,7 @@ class DrawceptionImagePanel:
                     seconds = int(time_re_groups[2])
                     self.time_spent = seconds + (60*minutes)
                     date = time_re_groups[3]
-                self.creation_date = parse_date(date).strftime("%Y-%m-%d")
+                self.creation_date = parse_date(date)
             except Exception:
                 logging.warn("Error during parsing string {}".format(time_details))
 
