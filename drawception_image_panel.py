@@ -1,9 +1,7 @@
 import requests
-import urllib.request
 from bs4 import BeautifulSoup
 import re
 import logging
-import datetime
 from dateutil.parser import parse as parse_date
 
 class DrawceptionImagePanel:
@@ -28,8 +26,6 @@ class DrawceptionImagePanel:
             time_re_groups = re.match("In (\\d*) minutes (\\d*) seconds on (.+)", time_details)
 
             date = None
-            time_spent = 0
-            creation_date = None
             try:
                 if time_re_groups == None:
                     # Games from 2012 did not record time spent data.
