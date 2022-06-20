@@ -14,6 +14,12 @@ class DrawceptionImagePanel:
         self.image_src = None
         self.image_name = None
     
+    @staticmethod
+    def create_panel_details(url):
+        panel = DrawceptionImagePanel(url)
+        panel.set_panel_details()
+        return panel
+
     def set_panel_details(self):
         page = requests.get(self.url)
         if page.status_code == 200:
