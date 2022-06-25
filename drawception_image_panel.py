@@ -11,11 +11,12 @@ class DrawceptionImagePanel:
         if self.url[-1] != "/":
             self.url += "/"
         self.id = None
+        self.name = None
         self.author = None
         self.creation_date = None
         self.time_spent = None
         self.image_src = None
-        self.image_name = None
+        self.image_alt = None
     
     @staticmethod
     def create_panel_details(url):
@@ -28,7 +29,9 @@ class DrawceptionImagePanel:
         if page.status_code == 200:
             soup = BeautifulSoup(page.content, 'html.parser')
             image = soup.find('img', class_="gamepanel-minsize gamepanel-shadow img-responsive")
-            self.id = re.match(".*drawing/(.+)/.*/", self.url)[1]
+            url_re = re.match(".*drawing/(.+)/(.*)/", self.url)
+            self.id = url_re[1]
+            self.name = url_re[2]
             details = soup.find("p", class_="lead")
             self.author = str(details.find("a").contents[0])
             time_details = str(details.find("small").contents[0])
@@ -49,7 +52,7 @@ class DrawceptionImagePanel:
                 logging.warn("Error during parsing string {}".format(time_details))
 
             self.image_src = image['src']
-            self.image_name = image['alt']
+            self.image_alt = image['alt']
             return True
         else:
             logging.error("Unable to access {}. HTTP response: {}".format(self.url, page.status_code))
@@ -83,7 +86,7 @@ class DrawceptionImagePanel:
         soup = BeautifulSoup(page.content, 'html.parser')
         image = soup.find_all('img', class_="gamepanel-minsize gamepanel-shadow img-responsive")[0]
         src = image['src']
-        name = image['alt']
+        name = re.match(".*drawing/(.+)/(.*)/", url)[2]
         opener = urllib.request.build_opener()
         opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
         urllib.request.install_opener(opener)
@@ -111,10 +114,10 @@ class DrawceptionImagePanel:
         urllib.request.install_opener(opener)
         if "http" in self.image_src:
             # Panel is not partially broken.
-            urllib.request.urlretrieve(self.image_src, folder + self.image_name + ".png")
+            urllib.request.urlretrieve(self.image_src, folder + self.name + ".png")
         else:
             # Panel is partially broken.
-            urllib.request.urlretrieve(self.image_src, folder + self.image_name + ".svg")
+            urllib.request.urlretrieve(self.image_src, folder + self.name + ".svg")
 
     def get_panel_svg(self, sessionid, panelid):
         """Gets the svg from drawception, given the panel id.
