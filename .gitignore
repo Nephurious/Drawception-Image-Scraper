@@ -6,3 +6,7 @@ output*
 
 # Scraped images directory
 images
+
+# Python
+__pycache__
+*.pyc
