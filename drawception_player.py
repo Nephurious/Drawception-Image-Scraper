@@ -3,12 +3,11 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import logging
+import urllib.parse
 
 class DrawceptionPlayer:
     def __init__(self, url):
         self.url = url
-        if self.url[-1] != "/":
-            self.url += "/"
         self.id = None
         self.name = None
         self.num_drawings = None
@@ -57,11 +56,12 @@ class DrawceptionPlayer:
             if len(soup.find('div', class_="thumbpanel-container").contents) == 1:
                 if soup.find('div', class_="thumbpanel-container").find('div') == None:
                     return None
-            base_url = re.match("(.+\\.com)", url)[1]
+            url_split = list(urllib.parse.urlsplit(url))
             a_tags = soup.find_all('a', class_="btn btn-sm btn-bright")
             links = []
             for tag in a_tags:
-                links.append(base_url + tag['href'])
+                url_split[2] = tag['href']
+                links.append(urllib.parse.urlunsplit(url_split))
             return links
         else:
             logging.error("Unable to access {}. HTTP response: {}".format(url, page.status_code))
@@ -79,14 +79,14 @@ class DrawceptionPlayer:
         """
         url = ""
         if use_drawings_tab:
-            url = self.url + "drawings/"
+            url = urllib.parse.urljoin(self.url,  "drawings/")
         else:
-            url = self.url + "games/"
+            url =  urllib.parse.urljoin(self.url, "games/")
         
         for page in range(1, max_pages + 1):
             if page > 100:
                 page = -page + 2
-            new_links = DrawceptionPlayer.get_drawing_links_from_url(url + str(page))
+            new_links = DrawceptionPlayer.get_drawing_links_from_url(urllib.parse.urljoin(url, str(page)))
             if new_links == None:
                 break
             self.drawings += new_links

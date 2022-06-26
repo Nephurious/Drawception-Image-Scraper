@@ -4,13 +4,12 @@ import re
 import logging
 from dateutil.parser import parse as parse_date
 import urllib.request
+import urllib.parse
 import os
 
 class DrawceptionImagePanel:
     def __init__(self, url):
         self.url = url
-        if self.url[-1] != "/":
-            self.url += "/"
         self.id = None
         self.name = None
         self.author = None
@@ -67,9 +66,10 @@ class DrawceptionImagePanel:
         Drawception drawings created after 2021-12-17 are partially broken. Png's fail to load
         due to an access denied bug. It is only possible to download svg images.
         """
-        if base_url[-1] != "/":
-            base_url += "/"
         url = base_url + "panel/drawing/" + panel_id + "/1/"
+        url = urllib.parse.urljoin(base_url, "panel/drawing/")
+        url = urllib.parse.urljoin(url, str(panel_id))
+        url = urllib.parse.urljoin(url, "/1/")
         DrawceptionImagePanel.download_drawing_from_url(url, directory)
     
     @staticmethod
