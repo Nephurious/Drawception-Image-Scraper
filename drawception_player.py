@@ -84,6 +84,8 @@ class DrawceptionPlayer:
             url = self.url + "games/"
         
         for page in range(1, max_pages + 1):
+            if page > 100:
+                page = -page + 2
             new_links = DrawceptionPlayer.get_drawing_links_from_url(url + str(page))
             if new_links == None:
                 break
