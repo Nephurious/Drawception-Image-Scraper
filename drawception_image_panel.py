@@ -11,6 +11,8 @@ import os
 class DrawceptionImagePanel:
     def __init__(self, url):
         self.url = url
+        if url[-1] != '/':
+            self.url += '/'
         self.id = None
         self.name = None
         self.author = None
@@ -47,7 +49,7 @@ class DrawceptionImagePanel:
         if page.status_code == 200:
             soup = BeautifulSoup(page.content, 'html.parser')
             image = soup.find('img', class_="gamepanel-minsize gamepanel-shadow img-responsive")
-            url_re = re.match(".*drawing/(.+)/(.*)/", self.url)
+            url_re = re.match(".*drawing/([^/]+)/([^/]*)", self.url)
             self.id = url_re[1]
             self.name = url_re[2]
             details = soup.find("p", class_="lead")
@@ -87,7 +89,7 @@ class DrawceptionImagePanel:
         soup = BeautifulSoup(page.content, 'html.parser')
         image = soup.find_all('img', class_="gamepanel-minsize gamepanel-shadow img-responsive")[0]
         src = image['src']
-        name = re.match(".*drawing/(.+)/(.*)/", url)[2]
+        name = re.match(".*drawing/([^/]+)/([^/]*)", url)[2]
         opener = urllib.request.build_opener()
         opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
         urllib.request.install_opener(opener)
@@ -155,18 +157,3 @@ class DrawceptionImagePanel:
         if include_img_src:
             details['img_src'] = self.image_src
         return details
-
-    def get_panel_svg(self, sessionid, panelid):
-        """Gets the svg from drawception, given the panel id.
-
-        Getting svg images requires a session cookie for images created before
-        2021-12-17.
-        """
-        url = self.base_url + "panel/getsvg.json"
-        cookie = {"PHPSESSID": sessionid}
-        request = {'panelid': panelid}
-        page = requests.post(url, json=request, cookies=cookie)
-        if page.status_code != 200:
-            return ""
-        else:
-            return page.text
