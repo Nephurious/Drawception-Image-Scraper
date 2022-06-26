@@ -4,6 +4,7 @@ import re
 import logging
 from dateutil.parser import parse as parse_date
 import urllib.request
+import os
 
 class DrawceptionImagePanel:
     def __init__(self, url):
@@ -76,6 +77,7 @@ class DrawceptionImagePanel:
     @staticmethod
     def download_drawing_from_url(url, directory="./images/"):
         """Downloads the panel image from drawception given a direct url to the panel page.
+        Image is saved with the name "[id]_[image_name].[extension]".
 
         Drawception drawings created after 2021-12-17 are partially broken. Png's fail to load
         due to an access denied bug. It is only possible to download svg images.
@@ -90,12 +92,17 @@ class DrawceptionImagePanel:
         opener = urllib.request.build_opener()
         opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
         urllib.request.install_opener(opener)
+        filename = ""
         if "http" in src:
             # Panel is not partially broken.
-            urllib.request.urlretrieve(src, directory + name + ".png")
+            filename = directory + name + ".png"
         else:
             # Panel is partially broken.
-            urllib.request.urlretrieve(src, directory + name + ".svg")
+            filename = directory + name + ".svg"
+        if os.path.exists(filename):
+            logging.warn("File {} exists. Skipping.".format(filename))
+        else:
+             urllib.request.urlretrieve(src, filename)
     
     def download_drawing(self, directory="./images/"):
         """Class method to download the panel image from drawception.
@@ -112,12 +119,17 @@ class DrawceptionImagePanel:
         opener = urllib.request.build_opener()
         opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
         urllib.request.install_opener(opener)
+        filename = ""
         if "http" in self.image_src:
             # Panel is not partially broken.
-            urllib.request.urlretrieve(self.image_src, directory + self.name + ".png")
+            filename = directory + self.id + '_' + self.name + ".png"
         else:
             # Panel is partially broken.
-            urllib.request.urlretrieve(self.image_src, directory + self.name + ".svg")
+            filename = directory + self.id + '_' + self.name + ".svg"
+        if os.path.exists(filename):
+            logging.warn("File {} exists. Skipping.".format(filename))
+        else:
+             urllib.request.urlretrieve(self.image_src, filename)
 
     def get_panel_svg(self, sessionid, panelid):
         """Gets the svg from drawception, given the panel id.
