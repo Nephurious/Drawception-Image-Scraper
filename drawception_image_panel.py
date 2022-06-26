@@ -5,6 +5,7 @@ import logging
 from dateutil.parser import parse as parse_date
 import urllib.request
 import urllib.parse
+import urllib.error
 import os
 
 class DrawceptionImagePanel:
@@ -36,7 +37,8 @@ class DrawceptionImagePanel:
             self.author = str(details.find("a").contents[0])
             time_details = str(details.find("small").contents[0])
             time_re_groups = re.match("In (\\d*) minutes (\\d*) seconds on (.+)", time_details)
-
+            self.image_src = image['src']
+            self.image_alt = image['alt']
             date = None
             try:
                 if time_re_groups == None:
@@ -48,11 +50,9 @@ class DrawceptionImagePanel:
                     self.time_spent = seconds + (60*minutes)
                     date = time_re_groups[3]
                 self.creation_date = parse_date(date)
+                logging.debug("GET {} and parse successful".format(self.url))
             except Exception:
                 logging.warn("Error during parsing string {}".format(time_details))
-
-            self.image_src = image['src']
-            self.image_alt = image['alt']
             return True
         else:
             logging.error("Unable to access {}. HTTP response: {}".format(self.url, page.status_code))
@@ -98,7 +98,12 @@ class DrawceptionImagePanel:
         if os.path.exists(filename):
             logging.warn("File {} exists. Skipping.".format(filename))
         else:
-             urllib.request.urlretrieve(src, filename)
+            try:
+                urllib.request.urlretrieve(src, filename)
+                return True
+            except urllib.error.HTTPError as e:
+                logging.error("Unable to get {}. Code: {}".format(e.geturl(), e.getcode()))
+                return False
     
     def download_drawing(self, directory="./images/"):
         """Class method to download the panel image from drawception.
@@ -123,7 +128,13 @@ class DrawceptionImagePanel:
         if os.path.exists(filename):
             logging.warn("File {} exists. Skipping.".format(filename))
         else:
-             urllib.request.urlretrieve(self.image_src, filename)
+            try:
+                urllib.request.urlretrieve(self.image_src, filename)
+                return True
+            except urllib.error.HTTPError as e:
+                logging.error("Unable to get {}. Code: {}".format(e.geturl(), e.getcode()))
+                return False
+
 
     def get_panel_svg(self, sessionid, panelid):
         """Gets the svg from drawception, given the panel id.
