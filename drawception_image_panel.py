@@ -67,8 +67,6 @@ class DrawceptionImagePanel:
         Drawception drawings created after 2021-12-17 are partially broken. Png's fail to load
         due to an access denied bug. It is only possible to download svg images.
         """
-        if directory[-1] != "/":
-            directory += "/"
         if base_url[-1] != "/":
             base_url += "/"
         url = base_url + "panel/drawing/" + panel_id + "/1/"
@@ -82,8 +80,6 @@ class DrawceptionImagePanel:
         Drawception drawings created after 2021-12-17 are partially broken. Png's fail to load
         due to an access denied bug. It is only possible to download svg images.
         """
-        if directory[-1] != "/":
-            directory += "/"
         page = requests.get(url)
         soup = BeautifulSoup(page.content, 'html.parser')
         image = soup.find_all('img', class_="gamepanel-minsize gamepanel-shadow img-responsive")[0]
@@ -95,10 +91,10 @@ class DrawceptionImagePanel:
         filename = ""
         if "http" in src:
             # Panel is not partially broken.
-            filename = directory + name + ".png"
+            filename = os.path.join(directory, name + ".png")
         else:
             # Panel is partially broken.
-            filename = directory + name + ".svg"
+            filename = os.path.join(directory, name + ".svg")
         if os.path.exists(filename):
             logging.warn("File {} exists. Skipping.".format(filename))
         else:
@@ -110,8 +106,6 @@ class DrawceptionImagePanel:
         Drawception drawings created after 2021-12-17 are partially broken. Png's fail to load
         due to an access denied bug. It is only possible to download svg images.
         """
-        if directory[-1] != "/":
-            directory += "/"
         if self.image_src == None:
             if self.set_panel_details() == False:
                 logging.error("Unable to download image from {}".format(self.url))
@@ -122,10 +116,10 @@ class DrawceptionImagePanel:
         filename = ""
         if "http" in self.image_src:
             # Panel is not partially broken.
-            filename = directory + self.id + '_' + self.name + ".png"
+            filename = os.path.join(directory, self.id + '_' + self.name + ".png")
         else:
             # Panel is partially broken.
-            filename = directory + self.id + '_' + self.name + ".svg"
+            filename = os.path.join(directory, self.id + '_' + self.name + ".svg")
         if os.path.exists(filename):
             logging.warn("File {} exists. Skipping.".format(filename))
         else:
