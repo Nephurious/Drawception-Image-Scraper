@@ -4,6 +4,7 @@ from drawception_player import DrawceptionPlayer
 import argparse
 import pandas as pd
 import logging
+import os
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Downloads Drawception Images of the player given the player url.")
@@ -30,6 +31,9 @@ if __name__ == "__main__":
             'panel_url'])
     panel_df.to_csv("{}_panels.csv".format(player.name_filesafe), index=False)
     for panel in player_panels:
-        logging.info("Downloading {}".format(panel.image_src))
+        image_src = panel.image_src
+        if len(image_src) > 100:
+            image_src = image_src[:100] + '...'
+        logging.info("Downloading {}".format(image_src))
         panel.download_drawing(directory=args.directory)
         time.sleep(2)

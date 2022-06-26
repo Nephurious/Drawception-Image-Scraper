@@ -95,7 +95,7 @@ class DrawceptionPlayer:
         for page in range(1, max_pages + 1):
             if page > 100:
                 page = -page + 2
-            new_links = DrawceptionPlayer.get_drawing_links_from_url(urllib.parse.urljoin(url, str(page)))
+            new_links = DrawceptionPlayer.get_drawing_links_from_url(urllib.parse.urljoin(url, str(page) + '/'))
             if new_links == None:
                 break
             self.drawings += new_links
