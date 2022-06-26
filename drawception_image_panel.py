@@ -23,6 +23,9 @@ class DrawceptionImagePanel:
     
     @staticmethod
     def create_panel_details(url):
+        """Creates a DrawceptionImagePanel object with the details
+        filled given the direct url to the drawing panel page.
+        """
         panel = DrawceptionImagePanel(url)
         panel.set_panel_details()
         return panel
@@ -45,6 +48,8 @@ class DrawceptionImagePanel:
             logging.error("Error during parsing string \"{}\"".format(time_details))
 
     def set_panel_details(self):
+        """Visits the panel page to set the attributes of this object.
+        """
         page = requests.get(self.url)
         if page.status_code == 200:
             soup = BeautifulSoup(page.content, 'html.parser')

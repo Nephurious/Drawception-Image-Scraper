@@ -22,6 +22,7 @@ class DrawceptionPlayer:
         self.drawings = []
 
     def set_player_details(self):
+        """Visits the player page to set the attributes of this object."""
         page = requests.get(self.url)
         if page.status_code == 200:
             self.id = re.match(".*player/([^/]+)/([^/]*)", self.url)[1]
@@ -83,7 +84,7 @@ class DrawceptionPlayer:
         drawings do not appear in the 'Drawings' tab.
 
         There also exists a bug in which we can bypass the 100 page limit by setting the
-        page to be negative. Page x and -x + 2 are the same.
+        page number to be negative. Page x and -x + 2 are the same.
         """
         url = ""
         if use_drawings_tab:
