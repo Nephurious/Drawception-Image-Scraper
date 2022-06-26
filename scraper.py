@@ -1,5 +1,4 @@
 import time
-from xmlrpc.client import boolean
 from drawception_image_panel import DrawceptionImagePanel
 from drawception_player import DrawceptionPlayer
 import argparse
