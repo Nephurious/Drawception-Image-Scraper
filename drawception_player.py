@@ -10,6 +10,7 @@ class DrawceptionPlayer:
         self.url = url
         self.id = None
         self.name = None
+        self.name_filesafe = None
         self.num_drawings = None
         self.num_captions = None
         self.followers = None
@@ -21,7 +22,8 @@ class DrawceptionPlayer:
     def set_player_details(self):
         page = requests.get(self.url)
         if page.status_code == 200:
-            self.id = re.match(".*player/(.+)/.*/", self.url)[1]
+            self.id = re.match(".*player/(.+)/(.*)/", self.url)[1]
+            self.name_filesafe = re.match(".*player/(.+)/(.*)/", self.url)[2]
             soup = BeautifulSoup(page.content, 'html.parser')
             player_statistics = soup.find('p', class_="clear-bot").contents[0].strip()
             player_statistics_re = re.match("(.+) has drawn ([0-9,]+)[^0-9,]+\

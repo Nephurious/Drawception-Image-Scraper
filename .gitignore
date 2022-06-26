@@ -1,11 +1,14 @@
 # Disallow committing sensitive information
 sessionid
 
-# Test files
-output*
+# log files
+*.log
 
 # Scraped images directory
 images
+
+# Outputted csv files
+*.csv
 
 # Python
 __pycache__

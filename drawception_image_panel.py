@@ -25,6 +25,23 @@ class DrawceptionImagePanel:
         panel.set_panel_details()
         return panel
 
+    def parse_time_details(self, time_details):
+        try:
+            time_re_groups = re.match("In( \\d+ minutes?)?( \\d+ seconds?)?.*on (.+)", time_details)
+            if time_re_groups != None:
+                time = 0
+                if time_re_groups[1] != None:
+                    time += 60 * int(time_re_groups[1].split()[0].strip())
+                if time_re_groups[2] != None:
+                    time += int(time_re_groups[2].split()[0].strip())
+                self.time_spent = time
+                self.creation_date = parse_date(time_re_groups[3])
+            else:
+                # Games from 2012 did not record time spent data.
+                self.creation_date = parse_date(time_details)
+        except Exception as e:
+            logging.error("Error during parsing string \"{}\"".format(time_details))
+
     def set_panel_details(self):
         page = requests.get(self.url)
         if page.status_code == 200:
@@ -36,26 +53,12 @@ class DrawceptionImagePanel:
             details = soup.find("p", class_="lead")
             self.author = str(details.find("a").contents[0])
             time_details = str(details.find("small").contents[0])
-            time_re_groups = re.match("In (\\d*) minutes (\\d*) seconds on (.+)", time_details)
+            self.parse_time_details(time_details)
             self.image_src = image['src']
             self.image_alt = image['alt']
-            date = None
-            try:
-                if time_re_groups == None:
-                    # Games from 2012 did not record time spent data.
-                    date = time_details
-                else:
-                    minutes = int(time_re_groups[1])
-                    seconds = int(time_re_groups[2])
-                    self.time_spent = seconds + (60*minutes)
-                    date = time_re_groups[3]
-                self.creation_date = parse_date(date)
-                logging.debug("GET {} and parse successful".format(self.url))
-            except Exception:
-                logging.warn("Error during parsing string {}".format(time_details))
             return True
         else:
-            logging.error("Unable to access {}. HTTP response: {}".format(self.url, page.status_code))
+            logging.error("Unable to access \"{}\". HTTP response: {}".format(self.url, page.status_code))
             return False
     
     @staticmethod
@@ -96,13 +99,13 @@ class DrawceptionImagePanel:
             # Panel is partially broken.
             filename = os.path.join(directory, name + ".svg")
         if os.path.exists(filename):
-            logging.warn("File {} exists. Skipping.".format(filename))
+            logging.warn("File \"{}\" exists. Skipping.".format(filename))
         else:
             try:
                 urllib.request.urlretrieve(src, filename)
                 return True
             except urllib.error.HTTPError as e:
-                logging.error("Unable to get {}. Code: {}".format(e.geturl(), e.getcode()))
+                logging.error("Unable to get \"{}\". Code: {}".format(e.geturl(), e.getcode()))
                 return False
     
     def download_drawing(self, directory="./images/"):
@@ -113,7 +116,7 @@ class DrawceptionImagePanel:
         """
         if self.image_src == None:
             if self.set_panel_details() == False:
-                logging.error("Unable to download image from {}".format(self.url))
+                logging.error("Unable to download image from \"{}\"".format(self.url))
         
         opener = urllib.request.build_opener()
         opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
@@ -126,15 +129,32 @@ class DrawceptionImagePanel:
             # Panel is partially broken.
             filename = os.path.join(directory, self.id + '_' + self.name + ".svg")
         if os.path.exists(filename):
-            logging.warn("File {} exists. Skipping.".format(filename))
+            logging.warn("File \"{}\" exists. Skipping.".format(filename))
         else:
             try:
                 urllib.request.urlretrieve(self.image_src, filename)
                 return True
             except urllib.error.HTTPError as e:
-                logging.error("Unable to get {}. Code: {}".format(e.geturl(), e.getcode()))
+                logging.error("Unable to get \"{}\". Code: {}".format(e.geturl(), e.getcode()))
                 return False
+    
+    def get_panel_details(self, include_img_src=False):
+        """Returns a dictionary containing panel details.
 
+        NOTE: Drawception images created after 2021-12-17 are
+        partially broken. These images use data urls that encode
+        svg images.
+        """
+        details = {'id':self.id,
+                'name':self.image_alt,
+                'name_file_safe':self.name,
+                'author':self.author,
+                'creation_date':self.creation_date,
+                'time_spent':self.time_spent,
+                'panel_url':self.url}
+        if include_img_src:
+            details['img_src'] = self.image_src
+        return details
 
     def get_panel_svg(self, sessionid, panelid):
         """Gets the svg from drawception, given the panel id.
