@@ -14,6 +14,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.log:
         logging.basicConfig(filename='scraper.log', level=logging.DEBUG, filemode='w')
+    if not os.path.isdir(args.directory):
+        raise FileNotFoundError("No such or invalid directory: {}".format(args.directory))
     player = DrawceptionPlayer(args.url)
     player.set_player_details()
     links = player.scrape_drawing_links()
