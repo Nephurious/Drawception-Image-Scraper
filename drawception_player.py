@@ -24,6 +24,7 @@ class DrawceptionPlayer:
     def set_player_details(self):
         """Visits the player page to set the attributes of this object."""
         page = requests.get(self.url)
+        self.url = page.url # Set the self url to be the final url after redirects
         if page.status_code == 200:
             self.id = re.match(".*player/([^/]+)/([^/]*)", self.url)[1]
             self.name_filesafe = re.match(".*player/([^/]+)/([^/]*)", self.url)[2]
@@ -56,7 +57,7 @@ class DrawceptionPlayer:
     def get_drawing_links_from_url(url):
         """Gets all the links to drawings from the given url. 
 
-        Returns None when there is an error or when the page returns
+        Returns None when there is an error, a redirect, or when the page returns
         'Nothing here yet'.
         """
         if url[-1] != '/':
