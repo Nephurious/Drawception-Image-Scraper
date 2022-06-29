@@ -6,6 +6,8 @@ import logging
 import urllib.parse
 
 class DrawceptionPlayer:
+    __LOGGER = logging.getLogger("scraper.player")
+
     def __init__(self, url):
         self.url = url
         if url[-1] != '/':
@@ -46,10 +48,10 @@ class DrawceptionPlayer:
                 else:
                     self.total_emotes = int(player_statistics_re[7].replace(',', ''))
             except Exception:
-                logging.error("Error during parsing string: {}".format(player_statistics))
+                self.__LOGGER.error("Error during parsing string: {}".format(player_statistics))
             return True
         else:
-            logging.error("Unable to access {}. \
+            self.__LOGGER.error("Unable to access {}. \
                            HTTP response: {}".format(self.url, page.status_code))
             return False
 
@@ -64,7 +66,7 @@ class DrawceptionPlayer:
             url += '/'
         page = requests.get(url)
         if page.url != url:
-            logging.error("Redirected from {} to {}. Unable to get links.".format(url, page.url))
+            DrawceptionPlayer.__LOGGER.error("Redirected from {} to {}. Unable to get links.".format(url, page.url))
             return None
         if page.status_code == 200:
             soup = BeautifulSoup(page.content, 'html.parser')
@@ -79,7 +81,7 @@ class DrawceptionPlayer:
                 links.append(urllib.parse.urlunsplit(url_split))
             return links
         else:
-            logging.error("Unable to access {}. HTTP response: {}".format(url, page.status_code))
+            DrawceptionPlayer.__LOGGER.error("Unable to access {}. HTTP response: {}".format(url, page.status_code))
             return None
     
     def scrape_drawing_links_by_page(self, page, use_drawings_tab=False):

@@ -7,6 +7,7 @@ import logging
 import os
 
 if __name__ == "__main__":
+    logger = logging.getLogger("scraper.main")
     parser = argparse.ArgumentParser(
         description="Downloads Drawception Images of the player given the player url.")
     parser.add_argument('url', type=str, help="Player url")
@@ -43,11 +44,11 @@ if __name__ == "__main__":
                 image_src = panel.image_src
                 if len(image_src) > 100:
                     image_src = image_src[:100] + '...'
-                logging.info("Downloading {}".format(image_src))
+                logger.info("Downloading {}".format(image_src))
                 panel.download_drawing(directory=args.directory)
                 time.sleep(2)
     except Exception as e:
-        logging.exception(e)
+        logger.exception(e)
     finally:
         if args.save_csv_summary and len(panel_df_rows) > 0:
             panel_df = pd.DataFrame(panel_df_rows, 

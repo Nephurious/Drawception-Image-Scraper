@@ -9,6 +9,8 @@ import urllib.error
 import os
 
 class DrawceptionImagePanel:
+    __LOGGER = logging.getLogger("scraper.imagepanel")
+
     def __init__(self, url):
         self.url = url
         if url[-1] != '/':
@@ -45,7 +47,7 @@ class DrawceptionImagePanel:
                 # Games from 2012 did not record time spent data.
                 self.creation_date = parse_date(time_details)
         except Exception as e:
-            logging.error("Error during parsing string \"{}\"".format(time_details))
+            self.__LOGGER.error("Error during parsing string \"{}\"".format(time_details))
 
     def set_panel_details(self):
         """Visits the panel page to set the attributes of this object.
@@ -65,7 +67,7 @@ class DrawceptionImagePanel:
             self.image_alt = image['alt']
             return True
         else:
-            logging.error("Unable to access \"{}\". HTTP response: {}".format(self.url, page.status_code))
+            self.__LOGGER.error("Unable to access \"{}\". HTTP response: {}".format(self.url, page.status_code))
             return False
     
     @staticmethod
@@ -106,13 +108,13 @@ class DrawceptionImagePanel:
             # Panel is partially broken.
             filename = os.path.join(directory, name + ".svg")
         if os.path.exists(filename):
-            logging.warn("File \"{}\" exists. Skipping.".format(filename))
+            DrawceptionImagePanel.__LOGGER.warn("File \"{}\" exists. Skipping.".format(filename))
         else:
             try:
                 urllib.request.urlretrieve(src, filename)
                 return True
             except urllib.error.HTTPError as e:
-                logging.error("Unable to get \"{}\". Code: {}".format(e.geturl(), e.getcode()))
+                DrawceptionImagePanel.__LOGGER.error("Unable to get \"{}\". Code: {}".format(e.geturl(), e.getcode()))
                 return False
     
     def download_drawing(self, directory="./images/"):
@@ -123,7 +125,7 @@ class DrawceptionImagePanel:
         """
         if self.image_src == None:
             if self.set_panel_details() == False:
-                logging.error("Unable to download image from \"{}\"".format(self.url))
+                self.__LOGGER.error("Unable to download image from \"{}\"".format(self.url))
         
         opener = urllib.request.build_opener()
         opener.addheaders = [('User-Agent', 'Mozilla/5.0')]
@@ -136,13 +138,13 @@ class DrawceptionImagePanel:
             # Panel is partially broken.
             filename = os.path.join(directory, self.id + '_' + self.name + ".svg")
         if os.path.exists(filename):
-            logging.warn("File \"{}\" exists. Skipping.".format(filename))
+            self.__LOGGER.warn("File \"{}\" exists. Skipping.".format(filename))
         else:
             try:
                 urllib.request.urlretrieve(self.image_src, filename)
                 return True
             except urllib.error.HTTPError as e:
-                logging.error("Unable to get \"{}\". Code: {}".format(e.geturl(), e.getcode()))
+                self.__LOGGER.error("Unable to get \"{}\". Code: {}".format(e.geturl(), e.getcode()))
                 return False
     
     def get_panel_details(self, include_img_src=False):
