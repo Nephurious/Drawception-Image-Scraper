@@ -19,7 +19,7 @@ class DrawceptionPlayer:
         self.following = None
         self.total_games = None
         self.total_emotes = None
-        self.drawings = []
+        self.drawings = set()
 
     def set_player_details(self):
         """Visits the player page to set the attributes of this object."""
@@ -59,7 +59,12 @@ class DrawceptionPlayer:
         Returns None when there is an error or when the page returns
         'Nothing here yet'.
         """
+        if url[-1] != '/':
+            url += '/'
         page = requests.get(url)
+        if page.url != url:
+            logging.error("Redirected from {} to {}. Unable to get links.".format(url, page.url))
+            return None
         if page.status_code == 200:
             soup = BeautifulSoup(page.content, 'html.parser')
             if len(soup.find('div', class_="thumbpanel-container").contents) == 1:
@@ -76,8 +81,22 @@ class DrawceptionPlayer:
             logging.error("Unable to access {}. HTTP response: {}".format(url, page.status_code))
             return None
     
+    def scrape_drawing_links_by_page(self, page, use_drawings_tab=False):
+        """Scrapes the links of all drawings at the given page made by this player.
+        
+        By default, we get drawing panels using the 'public games' tab.
+        Drawception drawings created after 2021-12-17 are partially broken. Broken
+        drawings do not appear in the 'Drawings' tab.
+        """
+        url = ""
+        if use_drawings_tab:
+            url = urllib.parse.urljoin(self.url,  "drawings/")
+        else:
+            url =  urllib.parse.urljoin(self.url, "games/")
+        return DrawceptionPlayer.get_drawing_links_from_url(urllib.parse.urljoin(url, str(page) + '/'))
+
     def scrape_drawing_links(self, use_drawings_tab=False, max_pages=100):
-        """Scrapes the links of all drawings made by this player.
+        """Scrapes the links of all drawings up to the max_pages made by this player.
         
         By default, we get drawing panels using the 'public games' tab.
         Drawception drawings created after 2021-12-17 are partially broken. Broken
@@ -86,18 +105,12 @@ class DrawceptionPlayer:
         There also exists a bug in which we can bypass the 100 page limit by setting the
         page number to be negative. Page x and -x + 2 are the same.
         """
-        url = ""
-        if use_drawings_tab:
-            url = urllib.parse.urljoin(self.url,  "drawings/")
-        else:
-            url =  urllib.parse.urljoin(self.url, "games/")
-        
         for page in range(1, max_pages + 1):
             if page > 100:
                 page = -page + 2
-            new_links = DrawceptionPlayer.get_drawing_links_from_url(urllib.parse.urljoin(url, str(page) + '/'))
+            new_links = self.scrape_drawing_links_by_page(page, use_drawings_tab)
             if new_links == None:
                 break
-            self.drawings += new_links
+            self.drawings.union(new_links)
             time.sleep(2)
         return self.drawings
