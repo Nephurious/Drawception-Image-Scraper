@@ -71,7 +71,7 @@ class DrawceptionImagePanel:
             return False
     
     @staticmethod
-    def download_drawing_from_id(panel_id, base_url="https://stage.drawception.com/", directory="./images/"):
+    def download_drawing_from_id(panel_id, base_url="https://drawception.com/", directory="./images/"):
         """Downloads the panel image from drawception, given the panel id and saves
         it into the specified directory.
 

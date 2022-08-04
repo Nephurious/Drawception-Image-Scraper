@@ -1,6 +1,6 @@
 # Drawception Image Scraper
 
-A simple python script that scrapes the drawing panels of any user on Drawception (main or stage).
+A simple python script that scrapes the drawing panels of any user on Drawception.
 Automatically browses through 100 pages of user public games and saves any image made by the user.
 
 ## Usage
